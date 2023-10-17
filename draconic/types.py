@@ -213,10 +213,8 @@ def safe_dict(config):
 
         def __getattribute__(self, name):
             # special cases to avoid recursion
-            if name == "__dict__":
-                return super(self).__dict__
-            if name in ["__approx_len__", "_prefer_keys_to_attrs"]:
-                return self.__dict__[name]
+            if name in ["__dict__", "__approx_len__", "_prefer_keys_to_attrs"]:
+                return super().__getattribute__(name)
 
             preferred, secondary = self, self.__dict__ if self._prefer_keys_to_attrs else self.__dict__, self
             try:
