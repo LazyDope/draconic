@@ -176,6 +176,7 @@ def safe_dict(config):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.__approx_len__ = approx_len_of(self)
+            self._prefer_keys_to_attrs = False
 
         def update(self, other_dict=None, **kvs):
             if other_dict is None:
@@ -203,15 +204,25 @@ def safe_dict(config):
                 self.__approx_len__ -= 1
             return retval
 
+        def prefer_keys_to_attrs(self, value: bool):
+            self._prefer_keys_to_attrs = value
+
         def __delitem__(self, key):
             super().__delitem__(key)
             self.__approx_len__ -= 1
 
-        def __getattr__(self, attr):
+        def __getattribute__(self, name):
+            if name in ["__approx_len__", "_prefer_keys_to_attrs"]:
+                return self.__dict__[name]
+
+            preferred, secondary = self, self.__dict__ if self._prefer_keys_to_attrs else self.__dict__, self
             try:
-                return self[attr]
+                return preferred[name]
             except KeyError:
-                raise AttributeError
+                try:
+                    return secondary[name]
+                except KeyError:
+                    raise AttributeError
 
         if PY_39:
 
