@@ -212,6 +212,9 @@ def safe_dict(config):
             self.__approx_len__ -= 1
 
         def __getattribute__(self, name):
+            # special cases to avoid recursion
+            if name == "__dict__":
+                return self.__dict__
             if name in ["__approx_len__", "_prefer_keys_to_attrs"]:
                 return self.__dict__[name]
 
